@@ -1,14 +1,5 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient as PrismaClientCtor } from '../../generated/prisma/client'
-import type { PrismaClient } from '../../generated/prisma/client'
-
-declare global {
-  // allow global caching in development to avoid creating many clients
-  var __prisma: PrismaClient | undefined
-}
-
-const prisma: PrismaClient = global.__prisma ?? new (PrismaClientCtor as unknown as new () => PrismaClient)()
-if (process.env.NODE_ENV !== 'production') global.__prisma = prisma
+import prisma from '../../../lib/prisma'
 
 export async function GET() {
   try {
