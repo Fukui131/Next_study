@@ -15,5 +15,5 @@ datasource db {
 model Task {
   id    Int    @id @default(autoincrement())
   title String
-  body String
+  body  String
 }
