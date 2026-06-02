@@ -19,6 +19,13 @@ export default function TaskList({ initialTasks }: TaskListProps) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [error, setError] = useState<string | null>(null)
 
+  const formatDate = (d: Date | string) => {
+    const date = d instanceof Date ? d : new Date(d)
+    return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(
+      date.getMinutes(),
+    ).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`
+  }
+
   const incompleteTasks = tasks.filter((task) => !task.completed)
   const completedTasks = tasks.filter((task) => task.completed)
 
@@ -80,8 +87,8 @@ export default function TaskList({ initialTasks }: TaskListProps) {
         <span className="inline-flex shrink-0 rounded-full bg-slate-200 px-3 py-1 text-sm text-slate-700">ID: {task.id}</span>
       </div>
       <div className="mt-4 flex flex-wrap gap-2 text-sm text-slate-500">
-        <span>作成: {(task.createdAt instanceof Date ? task.createdAt : new Date(task.createdAt)).toLocaleString()}</span>
-        <span>更新: {(task.updatedAt instanceof Date ? task.updatedAt : new Date(task.updatedAt)).toLocaleString()}</span>
+        <span>作成: {formatDate(task.createdAt)}</span>
+        <span>更新: {formatDate(task.updatedAt)}</span>
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         <button

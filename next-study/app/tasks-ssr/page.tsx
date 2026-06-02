@@ -58,7 +58,7 @@ export default async function TasksSSRPage() {
               </div>
             </div>
             <Link
-              href="/tasks"
+              href="/tasks-csr"
               className="mt-4 inline-flex rounded-xl border border-slate-300 bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
             >
               CSR版を見る
