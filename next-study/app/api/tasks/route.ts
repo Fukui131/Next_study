@@ -1,43 +1,62 @@
 import { NextResponse } from 'next/server'
-import prisma from '../../../lib/prisma'
+import { taskServerService, TaskServiceError } from '@/services/taskServerService'
+import type { ApiResponse, CreateTaskRequest, Task } from '@/types/task'
 
-interface TaskCreatePayload {
-  title: string
-  body: string
+function successResponse<T>(data: T, status = 200): NextResponse<ApiResponse<T>> {
+  return NextResponse.json<ApiResponse<T>>({ data }, { status })
+}
+
+function errorResponse(error: string, status: number): NextResponse<ApiResponse<never>> {
+  return NextResponse.json<ApiResponse<never>>({ error }, { status })
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function isCreateTaskRequest(value: unknown): value is CreateTaskRequest {
+  return isRecord(value) && typeof value.title === 'string' && typeof value.body === 'string'
+}
+
+async function readJson(request: Request): Promise<unknown> {
+  try {
+    return await request.json()
+  } catch {
+    return null
+  }
+}
+
+function handleTaskError(error: unknown, label: string): NextResponse<ApiResponse<never>> {
+  if (error instanceof TaskServiceError) {
+    return errorResponse(error.message, error.statusCode)
+  }
+
+  console.error(label, error)
+  return errorResponse('Internal Server Error', 500)
 }
 
 export async function GET() {
   try {
-    const tasks = await prisma.task.findMany({ orderBy: { id: 'desc' } })
-    return NextResponse.json(tasks)
+    const tasks = await taskServerService.getTasks()
+    return successResponse<Task[]>(tasks)
   } catch (error) {
-    console.error('GET /api/tasks error:', error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    return handleTaskError(error, 'GET /api/tasks error:')
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as TaskCreatePayload
+    const body = await readJson(request)
 
-    if (!body.title?.trim() || !body.body?.trim()) {
-      return NextResponse.json(
-        { error: 'title と body の両方を入力してください。' },
-        { status: 400 },
-      )
+    if (!isCreateTaskRequest(body)) {
+      return errorResponse('title と body は文字列で指定してください。', 400)
     }
 
-    const newTask = await prisma.task.create({
-      data: {
-        title: body.title.trim(),
-        body: body.body.trim(),
-      },
-    })
+    const createdTask = await taskServerService.createTask(body)
 
-    return NextResponse.json(newTask, { status: 201 })
+    return successResponse<Task>(createdTask, 201)
   } catch (error) {
-    console.error('POST /api/tasks error:', error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    return handleTaskError(error, 'POST /api/tasks error:')
   }
 }
 

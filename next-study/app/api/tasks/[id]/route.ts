@@ -1,50 +1,86 @@
 import { NextResponse } from 'next/server'
-import prisma from '../../../../lib/prisma'
+import { taskServerService, TaskServiceError } from '@/services/taskServerService'
+import type { ApiResponse, DeleteTaskRequest, Task, UpdateTaskRequest } from '@/types/task'
 
-interface TaskUpdatePayload {
-  completed?: boolean
+function successResponse<T>(data: T, status = 200): NextResponse<ApiResponse<T>> {
+  return NextResponse.json<ApiResponse<T>>({ data }, { status })
+}
+
+function errorResponse(error: string, status: number): NextResponse<ApiResponse<never>> {
+  return NextResponse.json<ApiResponse<never>>({ error }, { status })
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function isUpdateTaskRequest(value: unknown): value is UpdateTaskRequest {
+  return isRecord(value) && typeof value.completed === 'boolean'
+}
+
+function parseTaskId(id: string): number | null {
+  const taskId = Number(id)
+
+  if (!Number.isInteger(taskId) || taskId <= 0) {
+    return null
+  }
+
+  return taskId
+}
+
+async function readJson(request: Request): Promise<unknown> {
+  try {
+    return await request.json()
+  } catch {
+    return null
+  }
+}
+
+function handleTaskError(error: unknown, label: string): NextResponse<ApiResponse<never>> {
+  if (error instanceof TaskServiceError) {
+    return errorResponse(error.message, error.statusCode)
+  }
+
+  console.error(label, error)
+  return errorResponse('Internal Server Error', 500)
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const taskId = Number(id)
-  if (Number.isNaN(taskId)) {
-    return NextResponse.json({ error: '無効なタスクIDです。' }, { status: 400 })
+  const taskId = parseTaskId(id)
+
+  if (taskId === null) {
+    return errorResponse('無効なタスクIDです。', 400)
   }
 
   try {
-    const body = (await request.json()) as TaskUpdatePayload
-    if (typeof body.completed !== 'boolean') {
-      return NextResponse.json({ error: 'completed フィールドが必要です。' }, { status: 400 })
+    const body = await readJson(request)
+
+    if (!isUpdateTaskRequest(body)) {
+      return errorResponse('completed フィールドが必要です。', 400)
     }
 
-    const completed = body.completed
-    const data: { completed: boolean } = { completed }
-    const updatedTask = await prisma.task.update({
-      where: { id: taskId },
-      data,
-    })
+    const updatedTask = await taskServerService.updateTask(taskId, body)
 
-    return NextResponse.json(updatedTask)
+    return successResponse<Task>(updatedTask)
   } catch (error) {
-    console.error(`PATCH /api/tasks/${id} error:`, error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    return handleTaskError(error, `PATCH /api/tasks/${id} error:`)
   }
 }
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const taskId = Number(id)
-  if (Number.isNaN(taskId)) {
-    return NextResponse.json({ error: '無効なタスクIDです。' }, { status: 400 })
+  const taskId = parseTaskId(id)
+
+  if (taskId === null) {
+    return errorResponse('無効なタスクIDです。', 400)
   }
 
   try {
-    await prisma.task.delete({ where: { id: taskId } })
-    return NextResponse.json({ success: true })
+    const deletedTask = await taskServerService.deleteTask({ id: taskId })
+    return successResponse<DeleteTaskRequest>(deletedTask)
   } catch (error) {
-    console.error(`DELETE /api/tasks/${id} error:`, error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    return handleTaskError(error, `DELETE /api/tasks/${id} error:`)
   }
 }
 
