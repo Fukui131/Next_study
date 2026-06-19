@@ -1,4 +1,4 @@
-const { chromium } = require('playwright');
+import { chromium } from 'playwright';
 (async () => {
   const browser = await chromium.launch();
   const context = await browser.newContext();
@@ -18,7 +18,9 @@ const { chromium } = require('playwright');
     console.log('PAGE TITLE:', await page.title());
   } catch (err) {
     console.error('NAV ERROR:', err.stack || err.message);
+    throw err;
   } finally {
     await browser.close();
   }
 })();
+
