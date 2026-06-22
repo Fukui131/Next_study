@@ -1,5 +1,5 @@
 import { TaskItem } from '@/components/tasks/TaskItem'
-import type { CreateTaskRequest, Task } from '@/types/task'
+import type { Task, UpdateTaskRequest } from '@/types/task'
 
 interface TaskListProps {
   tasks: Task[]
@@ -8,7 +8,7 @@ interface TaskListProps {
   disabled: boolean
   emptyMessage?: string
   onRetry: () => Promise<void>
-  onUpdateTask: (task: Task, request: CreateTaskRequest) => Promise<void>
+  onUpdateTask: (task: Task, request: UpdateTaskRequest) => Promise<void>
   onToggleCompleted: (task: Task) => Promise<void>
   onDeleteTask: (task: Task) => Promise<void>
 }
@@ -18,7 +18,7 @@ interface TaskSectionProps {
   emptyMessage: string
   tasks: Task[]
   disabled: boolean
-  onUpdateTask: (task: Task, request: CreateTaskRequest) => Promise<void>
+  onUpdateTask: (task: Task, request: UpdateTaskRequest) => Promise<void>
   onToggleCompleted: (task: Task) => Promise<void>
   onDeleteTask: (task: Task) => Promise<void>
 }

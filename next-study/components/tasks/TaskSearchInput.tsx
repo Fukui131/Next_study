@@ -35,7 +35,7 @@ export function TaskSearchInput({
           />
         </div>
         <div className="flex shrink-0 items-center gap-3">
-          <span className="text-sm text-slate-600">
+          <span role="status" aria-live="polite" className="text-sm text-slate-600">
             表示: {resultCount} / {totalCount} 件
           </span>
           {hasKeyword ? (

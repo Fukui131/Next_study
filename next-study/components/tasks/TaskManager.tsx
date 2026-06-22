@@ -5,7 +5,7 @@ import { TaskForm } from '@/components/tasks/TaskForm'
 import { TaskList } from '@/components/tasks/TaskList'
 import { TaskSearchInput } from '@/components/tasks/TaskSearchInput'
 import { useTasks } from '@/hooks/useTasks'
-import type { CreateTaskRequest, Task } from '@/types/task'
+import type { CreateTaskRequest, Task, UpdateTaskRequest } from '@/types/task'
 
 interface TaskManagerProps {
   initialTasks?: Task[]
@@ -47,7 +47,7 @@ export function TaskManager({ initialTasks, initialError, fetchOnMount }: TaskMa
   )
 
   const handleUpdateTask = useCallback(
-    async (task: Task, request: CreateTaskRequest) => {
+    async (task: Task, request: UpdateTaskRequest) => {
       await updateTask(task.id, request)
     },
     [updateTask],

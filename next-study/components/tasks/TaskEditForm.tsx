@@ -1,13 +1,13 @@
 'use client'
 
 import { useId, useState, type FormEvent } from 'react'
-import type { CreateTaskRequest, Task } from '@/types/task'
+import type { Task, UpdateTaskRequest } from '@/types/task'
 
 interface TaskEditFormProps {
   task: Task
   disabled: boolean
   onCancel: () => void
-  onUpdateTask: (request: CreateTaskRequest) => Promise<void>
+  onUpdateTask: (request: UpdateTaskRequest) => Promise<void>
 }
 
 function toErrorMessage(error: unknown): string {
@@ -84,7 +84,10 @@ export function TaskEditForm({ task, disabled, onCancel, onUpdateTask }: TaskEdi
         />
       </div>
       {formError ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        <div
+          role="alert"
+          className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+        >
           {formError}
         </div>
       ) : null}

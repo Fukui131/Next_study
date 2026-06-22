@@ -4,12 +4,12 @@ import { useCallback, useState } from 'react'
 import { TaskActionButtons } from '@/components/tasks/TaskActionButtons'
 import { TaskEditForm } from '@/components/tasks/TaskEditForm'
 import { TaskStatusBadge } from '@/components/tasks/TaskStatusBadge'
-import type { CreateTaskRequest, Task } from '@/types/task'
+import type { Task, UpdateTaskRequest } from '@/types/task'
 
 interface TaskItemProps {
   task: Task
   disabled: boolean
-  onUpdateTask: (task: Task, request: CreateTaskRequest) => Promise<void>
+  onUpdateTask: (task: Task, request: UpdateTaskRequest) => Promise<void>
   onToggleCompleted: (task: Task) => Promise<void>
   onDeleteTask: (task: Task) => Promise<void>
 }
@@ -45,7 +45,7 @@ export function TaskItem({
     : 'text-slate-700'
 
   const handleUpdateTask = useCallback(
-    async (request: CreateTaskRequest) => {
+    async (request: UpdateTaskRequest) => {
       await onUpdateTask(task, request)
     },
     [onUpdateTask, task],
