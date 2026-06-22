@@ -53,14 +53,6 @@ function validateUpdateRequest(request: UpdateTaskRequest): UpdateTaskRequest {
   return { completed: request.completed }
 }
 
-async function ensureTaskExists(id: number): Promise<void> {
-  const task = await taskRepository.findById(id)
-
-  if (!task) {
-    throw new TaskServiceError('タスクが見つかりませんでした。', 404)
-  }
-}
-
 async function getTasks(): Promise<Task[]> {
   const tasks = await taskRepository.findMany()
   return tasks.map(toTask)
@@ -75,15 +67,23 @@ async function createTask(request: CreateTaskRequest): Promise<Task> {
 async function updateTask(id: number, request: UpdateTaskRequest): Promise<Task> {
   validateTaskId(id)
   const data = validateUpdateRequest(request)
-  await ensureTaskExists(id)
   const updatedTask = await taskRepository.update(id, data)
+
+  if (!updatedTask) {
+    throw new TaskServiceError('タスクが見つかりませんでした。', 404)
+  }
+
   return toTask(updatedTask)
 }
 
 async function deleteTask(request: DeleteTaskRequest): Promise<DeleteTaskRequest> {
   validateTaskId(request.id)
-  await ensureTaskExists(request.id)
-  await taskRepository.delete(request.id)
+  const deletedTask = await taskRepository.delete(request.id)
+
+  if (!deletedTask) {
+    throw new TaskServiceError('タスクが見つかりませんでした。', 404)
+  }
+
   return { id: request.id }
 }
 

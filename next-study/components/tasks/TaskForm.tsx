@@ -18,6 +18,7 @@ function toErrorMessage(error: unknown): string {
 
 export function TaskForm({ disabled, onCreateTask }: TaskFormProps) {
   const idPrefix = useId()
+  const formId = `${idPrefix}-task-form`
   const [isOpen, setIsOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
@@ -56,6 +57,8 @@ export function TaskForm({ disabled, onCreateTask }: TaskFormProps) {
     <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
       <button
         type="button"
+        aria-expanded={isOpen}
+        aria-controls={formId}
         onClick={() => setIsOpen((current) => !current)}
         className="inline-flex min-h-10 items-center justify-center rounded-lg bg-slate-950 px-4 text-sm font-medium text-white transition hover:bg-slate-800"
       >
@@ -63,7 +66,7 @@ export function TaskForm({ disabled, onCreateTask }: TaskFormProps) {
       </button>
 
       {isOpen ? (
-        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+        <form id={formId} onSubmit={handleSubmit} className="mt-5 space-y-4">
           <div>
             <label htmlFor={`${idPrefix}-title`} className="block text-sm font-medium text-slate-700">
               タイトル
