@@ -45,12 +45,42 @@ function normalizeCreateRequest(request: CreateTaskRequest): CreateTaskRequest {
   return { title, body }
 }
 
-function validateUpdateRequest(request: UpdateTaskRequest): UpdateTaskRequest {
-  if (typeof request.completed !== 'boolean') {
-    throw new TaskServiceError('completed フィールドが必要です。', 400)
+function normalizeUpdateRequest(request: UpdateTaskRequest): UpdateTaskRequest {
+  const data: UpdateTaskRequest = {}
+
+  if (request.title !== undefined) {
+    const title = request.title.trim()
+
+    if (!title) {
+      throw new TaskServiceError('title を入力してください。', 400)
+    }
+
+    data.title = title
   }
 
-  return { completed: request.completed }
+  if (request.body !== undefined) {
+    const body = request.body.trim()
+
+    if (!body) {
+      throw new TaskServiceError('body を入力してください。', 400)
+    }
+
+    data.body = body
+  }
+
+  if (request.completed !== undefined) {
+    if (typeof request.completed !== 'boolean') {
+      throw new TaskServiceError('completed は真偽値で指定してください。', 400)
+    }
+
+    data.completed = request.completed
+  }
+
+  if (data.title === undefined && data.body === undefined && data.completed === undefined) {
+    throw new TaskServiceError('更新する項目を指定してください。', 400)
+  }
+
+  return data
 }
 
 async function getTasks(): Promise<Task[]> {
@@ -66,7 +96,7 @@ async function createTask(request: CreateTaskRequest): Promise<Task> {
 
 async function updateTask(id: number, request: UpdateTaskRequest): Promise<Task> {
   validateTaskId(id)
-  const data = validateUpdateRequest(request)
+  const data = normalizeUpdateRequest(request)
   const updatedTask = await taskRepository.update(id, data)
 
   if (!updatedTask) {

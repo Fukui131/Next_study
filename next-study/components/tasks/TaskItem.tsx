@@ -1,10 +1,15 @@
+'use client'
+
+import { useCallback, useState } from 'react'
 import { TaskActionButtons } from '@/components/tasks/TaskActionButtons'
+import { TaskEditForm } from '@/components/tasks/TaskEditForm'
 import { TaskStatusBadge } from '@/components/tasks/TaskStatusBadge'
-import type { Task } from '@/types/task'
+import type { CreateTaskRequest, Task } from '@/types/task'
 
 interface TaskItemProps {
   task: Task
   disabled: boolean
+  onUpdateTask: (task: Task, request: CreateTaskRequest) => Promise<void>
   onToggleCompleted: (task: Task) => Promise<void>
   onDeleteTask: (task: Task) => Promise<void>
 }
@@ -22,7 +27,15 @@ function formatDate(value: string): string {
   }).format(date)
 }
 
-export function TaskItem({ task, disabled, onToggleCompleted, onDeleteTask }: TaskItemProps) {
+export function TaskItem({
+  task,
+  disabled,
+  onUpdateTask,
+  onToggleCompleted,
+  onDeleteTask,
+}: TaskItemProps) {
+  const [isEditing, setIsEditing] = useState(false)
+
   const titleClassName = task.completed
     ? 'text-slate-500 line-through'
     : 'text-slate-950'
@@ -30,6 +43,13 @@ export function TaskItem({ task, disabled, onToggleCompleted, onDeleteTask }: Ta
   const bodyClassName = task.completed
     ? 'text-slate-500 line-through'
     : 'text-slate-700'
+
+  const handleUpdateTask = useCallback(
+    async (request: CreateTaskRequest) => {
+      await onUpdateTask(task, request)
+    },
+    [onUpdateTask, task],
+  )
 
   return (
     <li className={`rounded-lg border border-slate-200 bg-white p-4 shadow-sm ${task.completed ? 'opacity-80' : ''}`}>
@@ -54,9 +74,19 @@ export function TaskItem({ task, disabled, onToggleCompleted, onDeleteTask }: Ta
       <TaskActionButtons
         task={task}
         disabled={disabled}
+        isEditing={isEditing}
+        onEditTask={() => setIsEditing(true)}
         onToggleCompleted={onToggleCompleted}
         onDeleteTask={onDeleteTask}
       />
+      {isEditing ? (
+        <TaskEditForm
+          task={task}
+          disabled={disabled}
+          onCancel={() => setIsEditing(false)}
+          onUpdateTask={handleUpdateTask}
+        />
+      ) : null}
     </li>
   )
 }

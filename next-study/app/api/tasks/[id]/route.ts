@@ -15,7 +15,23 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isUpdateTaskRequest(value: unknown): value is UpdateTaskRequest {
-  return isRecord(value) && typeof value.completed === 'boolean'
+  if (!isRecord(value)) {
+    return false
+  }
+
+  const hasTitle = 'title' in value
+  const hasBody = 'body' in value
+  const hasCompleted = 'completed' in value
+
+  if (!hasTitle && !hasBody && !hasCompleted) {
+    return false
+  }
+
+  return (
+    (!hasTitle || typeof value.title === 'string') &&
+    (!hasBody || typeof value.body === 'string') &&
+    (!hasCompleted || typeof value.completed === 'boolean')
+  )
 }
 
 function parseTaskId(id: string): number | null {
@@ -57,7 +73,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const body = await readJson(request)
 
     if (!isUpdateTaskRequest(body)) {
-      return errorResponse('completed フィールドが必要です。', 400)
+      return errorResponse('更新する項目の形式が正しくありません。', 400)
     }
 
     const updatedTask = await taskServerService.updateTask(taskId, body)

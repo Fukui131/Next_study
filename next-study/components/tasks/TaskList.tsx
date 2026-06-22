@@ -1,12 +1,14 @@
 import { TaskItem } from '@/components/tasks/TaskItem'
-import type { Task } from '@/types/task'
+import type { CreateTaskRequest, Task } from '@/types/task'
 
 interface TaskListProps {
   tasks: Task[]
   loading: boolean
   error: string | null
   disabled: boolean
+  emptyMessage?: string
   onRetry: () => Promise<void>
+  onUpdateTask: (task: Task, request: CreateTaskRequest) => Promise<void>
   onToggleCompleted: (task: Task) => Promise<void>
   onDeleteTask: (task: Task) => Promise<void>
 }
@@ -16,6 +18,7 @@ interface TaskSectionProps {
   emptyMessage: string
   tasks: Task[]
   disabled: boolean
+  onUpdateTask: (task: Task, request: CreateTaskRequest) => Promise<void>
   onToggleCompleted: (task: Task) => Promise<void>
   onDeleteTask: (task: Task) => Promise<void>
 }
@@ -25,6 +28,7 @@ function TaskSection({
   emptyMessage,
   tasks,
   disabled,
+  onUpdateTask,
   onToggleCompleted,
   onDeleteTask,
 }: TaskSectionProps) {
@@ -42,6 +46,7 @@ function TaskSection({
               key={task.id}
               task={task}
               disabled={disabled}
+              onUpdateTask={onUpdateTask}
               onToggleCompleted={onToggleCompleted}
               onDeleteTask={onDeleteTask}
             />
@@ -57,7 +62,9 @@ export function TaskList({
   loading,
   error,
   disabled,
+  emptyMessage = 'Task が見つかりませんでした。',
   onRetry,
+  onUpdateTask,
   onToggleCompleted,
   onDeleteTask,
 }: TaskListProps) {
@@ -85,7 +92,7 @@ export function TaskList({
         </div>
       ) : tasks.length === 0 ? (
         <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-600">
-          Task が見つかりませんでした。
+          {emptyMessage}
         </div>
       ) : (
         <div className="space-y-8">
@@ -94,6 +101,7 @@ export function TaskList({
             emptyMessage="未完了のタスクはありません。"
             tasks={incompleteTasks}
             disabled={disabled}
+            onUpdateTask={onUpdateTask}
             onToggleCompleted={onToggleCompleted}
             onDeleteTask={onDeleteTask}
           />
@@ -102,6 +110,7 @@ export function TaskList({
             emptyMessage="完了済みのタスクはありません。"
             tasks={completedTasks}
             disabled={disabled}
+            onUpdateTask={onUpdateTask}
             onToggleCompleted={onToggleCompleted}
             onDeleteTask={onDeleteTask}
           />

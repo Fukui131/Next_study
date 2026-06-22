@@ -22,7 +22,9 @@ export interface CreateTaskRequest {
 }
 
 export interface UpdateTaskRequest {
-  completed: boolean
+  title?: string
+  body?: string
+  completed?: boolean
 }
 
 export interface DeleteTaskRequest {

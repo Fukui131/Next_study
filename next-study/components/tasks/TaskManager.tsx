@@ -1,8 +1,9 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { TaskForm } from '@/components/tasks/TaskForm'
 import { TaskList } from '@/components/tasks/TaskList'
+import { TaskSearchInput } from '@/components/tasks/TaskSearchInput'
 import { useTasks } from '@/hooks/useTasks'
 import type { CreateTaskRequest, Task } from '@/types/task'
 
@@ -27,10 +28,29 @@ export function TaskManager({ initialTasks, initialError, fetchOnMount }: TaskMa
     initialError,
     fetchOnMount,
   })
+  const [searchKeyword, setSearchKeyword] = useState('')
+  const normalizedSearchKeyword = searchKeyword.trim().toLocaleLowerCase()
+
+  const filteredTasks = useMemo(() => {
+    if (!normalizedSearchKeyword) {
+      return tasks
+    }
+
+    return tasks.filter((task) =>
+      task.title.toLocaleLowerCase().includes(normalizedSearchKeyword),
+    )
+  }, [tasks, normalizedSearchKeyword])
 
   const handleCreateTask = useCallback(
     async (request: CreateTaskRequest) => createTask(request),
     [createTask],
+  )
+
+  const handleUpdateTask = useCallback(
+    async (task: Task, request: CreateTaskRequest) => {
+      await updateTask(task.id, request)
+    },
+    [updateTask],
   )
 
   const handleToggleCompleted = useCallback(
@@ -62,12 +82,24 @@ export function TaskManager({ initialTasks, initialError, fetchOnMount }: TaskMa
   return (
     <div className="space-y-6">
       <TaskForm disabled={isMutating} onCreateTask={handleCreateTask} />
+      <TaskSearchInput
+        value={searchKeyword}
+        totalCount={tasks.length}
+        resultCount={filteredTasks.length}
+        onChange={setSearchKeyword}
+      />
       <TaskList
-        tasks={tasks}
+        tasks={filteredTasks}
         loading={loading}
         error={error}
         disabled={isMutating}
+        emptyMessage={
+          normalizedSearchKeyword
+            ? '検索条件に一致する Task はありません。'
+            : 'Task が見つかりませんでした。'
+        }
         onRetry={refetch}
+        onUpdateTask={handleUpdateTask}
         onToggleCompleted={handleToggleCompleted}
         onDeleteTask={handleDeleteTask}
       />
