@@ -3,6 +3,8 @@ import type { Task } from '@/types/task'
 interface TaskActionButtonsProps {
   task: Task
   disabled: boolean
+  isEditing: boolean
+  onEditTask: (task: Task) => void
   onToggleCompleted: (task: Task) => Promise<void>
   onDeleteTask: (task: Task) => Promise<void>
 }
@@ -10,6 +12,8 @@ interface TaskActionButtonsProps {
 export function TaskActionButtons({
   task,
   disabled,
+  isEditing,
+  onEditTask,
   onToggleCompleted,
   onDeleteTask,
 }: TaskActionButtonsProps) {
@@ -24,6 +28,14 @@ export function TaskActionButtons({
         }`}
       >
         {task.completed ? '未完了に戻す' : '完了にする'}
+      </button>
+      <button
+        type="button"
+        onClick={() => onEditTask(task)}
+        disabled={disabled || isEditing}
+        className="min-h-10 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
+      >
+        {isEditing ? '編集中' : '編集'}
       </button>
       <button
         type="button"
