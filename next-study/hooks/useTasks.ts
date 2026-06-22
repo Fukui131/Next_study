@@ -121,6 +121,10 @@ export function useTasks(options: UseTasksOptions = {}): UseTasksReturn {
         setError(message)
       }
 
+      if (caughtError instanceof Error) {
+        throw caughtError
+      }
+
       throw new Error(message)
     } finally {
       if (mountedRef.current) {
@@ -150,6 +154,10 @@ export function useTasks(options: UseTasksOptions = {}): UseTasksReturn {
         setError(message)
       }
 
+      if (caughtError instanceof Error) {
+        throw caughtError
+      }
+
       throw new Error(message)
     } finally {
       if (mountedRef.current) {
@@ -175,6 +183,10 @@ export function useTasks(options: UseTasksOptions = {}): UseTasksReturn {
 
       if (mountedRef.current) {
         setError(message)
+      }
+
+      if (caughtError instanceof Error) {
+        throw caughtError
       }
 
       throw new Error(message)

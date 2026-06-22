@@ -1,9 +1,7 @@
-import { headers } from 'next/headers'
 import { TaskManager } from '@/components/tasks/TaskManager'
 import { TaskPageHeader } from '@/components/tasks/TaskPageHeader'
-import type { ApiResponse, Task } from '@/types/task'
-
-const TASKS_REVALIDATE_SECONDS = 30
+import { taskServerService, TaskServiceError } from '@/services/taskServerService'
+import type { Task } from '@/types/task'
 
 export const revalidate = 30
 
@@ -12,42 +10,21 @@ interface TasksFetchResult {
   error: string | null
 }
 
-async function getBaseUrl(): Promise<string> {
-  const headersList = await headers()
-  const host = headersList.get('host') ?? `localhost:${process.env.PORT ?? '3000'}`
-  const protocol = headersList.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https')
-
-  return `${protocol}://${host}`
-}
-
 async function getTasks(): Promise<TasksFetchResult> {
-  const baseUrl = await getBaseUrl()
-
   try {
-    const response = await fetch(`${baseUrl}/api/tasks`, {
-      next: { revalidate: TASKS_REVALIDATE_SECONDS },
-    })
-    const payload = (await response.json()) as ApiResponse<Task[]>
-
-    if (!response.ok) {
-      return {
-        tasks: [],
-        error: 'error' in payload ? payload.error : 'タスクの読み込みに失敗しました。',
-      }
-    }
-
-    if (!('data' in payload)) {
-      return {
-        tasks: [],
-        error: 'API レスポンスの形式が正しくありません。',
-      }
-    }
-
+    const tasks = await taskServerService.getTasks()
     return {
-      tasks: payload.data,
+      tasks,
       error: null,
     }
   } catch (error) {
+    if (error instanceof TaskServiceError) {
+      return {
+        tasks: [],
+        error: error.message,
+      }
+    }
+
     console.error('SSR task fetch error:', error)
 
     return {
