@@ -6,7 +6,6 @@ interface TaskListProps {
   loading: boolean
   error: string | null
   disabled: boolean
-  emptyMessage?: string
   onRetry: () => Promise<void>
   onUpdateTask: (task: Task, request: UpdateTaskRequest) => Promise<void>
   onToggleCompleted: (task: Task) => Promise<void>
@@ -33,26 +32,30 @@ function TaskSection({
   onDeleteTask,
 }: TaskSectionProps) {
   return (
-    <section>
-      <h2 className="mb-3 text-base font-semibold text-slate-900">{title}</h2>
-      {tasks.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
-          {emptyMessage}
-        </div>
-      ) : (
-        <ul className="space-y-3">
-          {tasks.map((task) => (
-            <TaskItem
-              key={task.id}
-              task={task}
-              disabled={disabled}
-              onUpdateTask={onUpdateTask}
-              onToggleCompleted={onToggleCompleted}
-              onDeleteTask={onDeleteTask}
-            />
-          ))}
-        </ul>
-      )}
+    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-200 px-6 py-4">
+        <h2 className="text-base font-semibold text-slate-900">{title}</h2>
+      </div>
+      <div className="max-h-[360px] overflow-y-auto p-6">
+        {tasks.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
+            {emptyMessage}
+          </div>
+        ) : (
+          <ul className="space-y-3">
+            {tasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                disabled={disabled}
+                onUpdateTask={onUpdateTask}
+                onToggleCompleted={onToggleCompleted}
+                onDeleteTask={onDeleteTask}
+              />
+            ))}
+          </ul>
+        )}
+      </div>
     </section>
   )
 }
@@ -62,7 +65,6 @@ export function TaskList({
   loading,
   error,
   disabled,
-  emptyMessage = 'Task が見つかりませんでした。',
   onRetry,
   onUpdateTask,
   onToggleCompleted,
@@ -90,15 +92,11 @@ export function TaskList({
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
           読み込み中
         </div>
-      ) : tasks.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-600">
-          {emptyMessage}
-        </div>
       ) : (
         <div className="space-y-8">
           <TaskSection
             title="未完了タスク"
-            emptyMessage="未完了のタスクはありません。"
+            emptyMessage="未完了タスクはありません。"
             tasks={incompleteTasks}
             disabled={disabled}
             onUpdateTask={onUpdateTask}
@@ -106,8 +104,8 @@ export function TaskList({
             onDeleteTask={onDeleteTask}
           />
           <TaskSection
-            title="完了済みタスク"
-            emptyMessage="完了済みのタスクはありません。"
+            title="完了タスク"
+            emptyMessage="完了タスクはありません。"
             tasks={completedTasks}
             disabled={disabled}
             onUpdateTask={onUpdateTask}
