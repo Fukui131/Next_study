@@ -93,11 +93,6 @@ export function TaskManager({ initialTasks, initialError, fetchOnMount }: TaskMa
         loading={loading}
         error={error}
         disabled={isMutating}
-        emptyMessage={
-          normalizedSearchKeyword
-            ? '検索条件に一致する Task はありません。'
-            : 'Task が見つかりませんでした。'
-        }
         onRetry={refetch}
         onUpdateTask={handleUpdateTask}
         onToggleCompleted={handleToggleCompleted}
